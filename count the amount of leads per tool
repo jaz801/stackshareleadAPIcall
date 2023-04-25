@@ -1,0 +1,27 @@
+import requests
+
+url = "https://api.stackshare.io/graphql?access_token=required"
+
+headers = {
+    "accept": "application/json",
+    "x-api-key": "nGjYB2ZLBH2DIdSgZ3OPYg"
+}
+
+query = '''
+{
+  leads(toolMatch: "any", usingToolSlugs: [" TOOL NAME HERE "]) { 
+    count
+    edges {
+      node {
+        companyName
+        companyId
+        domain
+      }
+    }
+  }
+}
+'''
+
+response = requests.post(url, headers=headers, json={'query': query})
+
+print(response.text)
