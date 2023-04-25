@@ -1,0 +1,23 @@
+
+You need to get the API key
+
+https://stackshare.io/api
+
+Their UX is terrible, but next to 100 API call, which should say 100 API endpoints, you find a dot.
+Click on it and then agree.
+
+First test the script with the 100 API endpoints if the Count Script works, upgrade to the paid tier. 
+
+How this GRAPH API works -> You retrieve 25 leads for each call, and each call has an idenitfier for the next call.
+
+40 * 25 = 1000 leads. 
+
+
+
+Run these script in Google Colab
+
+First run the Count Script
+Secondly, run the Get The End Point Script
+Thirdly, run the the get the 1000 leads script
+
+
