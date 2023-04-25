@@ -1,0 +1,31 @@
+
+url = "https://api.stackshare.io/graphql?access_token=required"
+
+headers = {
+    "accept": "application/json",
+    "x-api-key": " PUT YOU API KEY HERE "
+}
+
+query = '''
+{
+  leads(toolMatch: "any", usingToolSlugs: [" TOOL NAME "], first: 25) { 
+    pageInfo {
+      startCursor
+      endCursor
+      hasNextPage
+      hasPreviousPage
+    }
+    edges {
+      node {
+        companyName
+        companyId
+        domain
+      }
+    }
+  }
+}
+'''
+
+response = requests.post(url, headers=headers, json={'query': query})
+
+print(response.text)
