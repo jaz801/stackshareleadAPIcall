@@ -1,0 +1,101 @@
+#most often it doesn't give you the amount of leads you get from the count script.
+
+import requests
+import json
+import pandas as pd
+
+url = "https://api.stackshare.io/graphql?access_token=required"
+
+headers = {
+    "accept": "application/json",
+    "x-api-key": "5VXM_n5UpyePf6W1q1aNZQ"
+}
+
+# Define initial value for after parameter
+after = "MjU"
+
+# Define number of iterations
+n_iterations = 40
+
+# Define results array to store data from all pages
+results = []
+
+# Loop to make multiple requests
+for i in range(n_iterations):
+    # Define the GraphQL query
+    query = '''
+    {
+      leads(toolMatch: "any", usingToolSlugs: ["flutter"], after: "%s") { 
+        pageInfo {
+          startCursor
+          endCursor
+          hasNextPage
+          hasPreviousPage
+        }
+        edges {
+          node {
+            companyName
+            companyId
+            domain
+          }
+        }
+      }
+    }
+    ''' % after
+    
+    # Send the request
+    response = requests.post(url, headers=headers, json={'query': query})
+
+    # Parse the response
+    try:
+        data = json.loads(response.text)
+    except json.JSONDecodeError as e:
+        print(f"Error decoding response JSON: {e}")
+        continue  # Skip to next iteration if there's an error
+
+    # Get the endCursor value and save it as the new after value
+    try:
+        after = data['data']['leads']['pageInfo']['endCursor']
+    except KeyError:
+        print(f"Error accessing 'endCursor' value in response data: {data}")
+        continue  # Skip to next iteration if there's an error
+
+    # Add the data from this page to the results array
+    results += [{'companyName': edge['node']['companyName'], 'domain': edge['node']['domain']} for edge in data['data']['leads']['edges']]
+
+    # Check if there are more pages to fetch
+    while data['data']['leads']['pageInfo']['hasNextPage']:
+        # Set the after value to the endCursor of the current page
+        after = data['data']['leads']['pageInfo']['endCursor']
+        
+        # Update the query with the new after value
+        query = query.replace('"{}"'.format(after), '"{}"'.format(after.replace('"', '\\"')))
+        
+        # Send the request for the next page
+        response = requests.post(url, headers=headers, json={'query': query})
+        
+        # Parse the response for the next page
+        try:
+            data = json.loads(response.text)
+        except json.JSONDecodeError as e:
+            print(f"Error decoding response JSON: {e}")
+            break  # Stop fetching more pages if there's an error
+        
+        # Add the data from the next page to the results array
+        results += [{'companyName': edge['node']['companyName'], 'domain': edge['node']['domain']} for edge in data['data']['leads']['edges']]
+
+# Create a pandas dataframe from the results
+df = pd.DataFrame(results, columns=['companyName', 'domain'])
+
+# Print the dataframe
+print(df)
+
+# dataframe to csv om te controleren
+import pandas as pd
+from google.colab import files
+
+
+# Downloading the dataframe as a CSV file
+
+df.to_csv('stackshareAPIcall.csv', index=False)
+files.download('stackshareAPIcall.csv')
